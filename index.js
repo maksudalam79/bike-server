@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const jsonwebtoken = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const { ObjectID } = require('bson');
 const port=process.env.PORT||5000;
 require('dotenv').config()
@@ -17,6 +17,25 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_password}@clu
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 // main...
+function verifyJwt(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).send("Unauthorized access");
+    }
+    const token = authHeader.split(" ")[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+      if (err) {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
+      req.decoded = decoded;
+      next();
+    });
+  }
+  
+
+
+
+
 
 async function run(){
     try{
@@ -44,7 +63,7 @@ async function run(){
             const result=await buyerCollection.insertOne(buyer)
             res.send(result)
         })
-        app.get('/buyer',async(req,res)=>{
+        app.get('/buyer',verifyJwt,async(req,res)=>{
             const email=req.query.email
             const query={email:email}
             const buyer=await buyerCollection.find(query).toArray()
@@ -55,7 +74,7 @@ app.get('/jwt',async(req,res)=>{
     const query={email:email}
     const user=await usersCollection.findOne(query)
     if(user){
-        const token=jwt.sign({email},process.env.ACCESS_TOKEN)
+        const token=jwt.sign({email}, process.env.ACCESS_TOKEN)
         return res.send({accessToken:token})
     }
     res.status(403).send({accessToken:''})
