@@ -50,8 +50,8 @@ async function run(){
             res.send(buyer) 
         })
         app.post('/users',async(req,res)=>{
-            const users=req.body
-            const result=await usersCollection.insertOne(users)
+            const user=req.body
+            const result=await usersCollection.insertOne(user)
             res.send(result)
     })
 
