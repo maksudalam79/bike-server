@@ -65,6 +65,11 @@ async function run(){
         })
         app.get('/buyer',verifyJwt,async(req,res)=>{
             const email=req.query.email
+            const decoded = req.decoded.email;
+      if (email !== decoded) {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
+
             const query={email:email}
             const buyer=await buyerCollection.find(query).toArray()
             res.send(buyer) 
