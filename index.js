@@ -40,6 +40,7 @@ function verifyJwt(req, res, next) {
 async function run(){
     try{
         const bikeCategoriesCollection=client.db('bikeResell').collection('bikeCategories')
+        const productsCollection=client.db('bikeResell').collection('bikeProduct')
         const buyerCollection=client.db('bikeResell').collection('buyer')
         const usersCollection=client.db('bikeResell').collection('users')
       
@@ -49,14 +50,29 @@ async function run(){
             const Categories=await bikeCategoriesCollection.find(query).toArray();
             res.send(Categories)
         })
-       
-        app.get('/bikeCategories/:id',async(req,res)=>{
-            const id=req.params.id
+        app.get('/bikeProduct/:category',async(req,res)=>{
+             const id=req.params.category
+             const query={category:id};
+              if(id==query){
+                res.send(Categories)
+              }
+            const Categories=await productsCollection.find(query).toArray();
+            res.send(Categories)
+        })
+       app.post('/bikeProduct',async(req,res)=>{
+        const product=req.body
+        const result=await productsCollection.insertOne(product)
+        res.send(result)
+        })
+
+        
+        app.get('/bikeCategories/:category',async(req,res)=>{
+            const id=req.params.category
             console.log(id)
-          const query={_id:ObjectID(id)}
+          const query={category:id}
           console.log(query)
-            const category=await bikeCategoriesCollection.findOne(query)
-            res.send(category)
+            const result=await bikeCategoriesCollection.findOne(query)
+            res.send(result)
         })
         app.post('/buyer',async(req,res)=>{
             const buyer=req.body
