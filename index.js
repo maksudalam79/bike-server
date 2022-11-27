@@ -27,7 +27,7 @@ function verifyJwt(req, res, next) {
     return res.status(401).send("Unauthorized access");
   }
   const token = authHeader.split(" ")[1];
-  jwt.verify(token,process.env.ACCESS_TOKEN,function (err, decoded) {
+  jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
     if (err) {
       return res.status(403).send({ message: "Forbidden access" });
     }
@@ -89,7 +89,7 @@ async function run() {
     });
     app.get("/buyer/:id", async (req, res) => {
       const id = req.params.id;
-      const query={_id:ObjectId(id)}
+      const query = { _id: ObjectId(id) };
       const result = await buyerCollection.findOne(query);
       res.send(result);
     });
@@ -106,45 +106,44 @@ async function run() {
       res.send(buyer);
     });
 
-
     app.post("/create-payment-intent", async (req, res) => {
-   const buying=req.body;
-   const price=buying.price;
-   const amount=price*100;
-   const paymentIntent=await stripe.paymentIntents.create({
-    currency: "BDT",
-    amount,
-    "payment_method_types":["card"]
-    })
-    res.send({
-      clientSecret: paymentIntent.client_secret,
-      })
-  });
-  app.post('/payment',async(req,res)=>{
-    const payment=req.body;
-    const result=await paymentCollection.insertOne(payment)
-    const id=payment.buyingId
-    const filter={_id:ObjectId(id)}
-    const updateDoc={
-      $set:{
-        paid:true,
-        transactionId:payment.transactionId
-      }
-    }
-    const updateResult=await buyerCollection.updateOne(filter,updateDoc)
-    res.send({result})
-  })
-
-
+      const buying = req.body;
+      const price = buying.price;
+      const amount = price * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        currency: "BDT",
+        amount,
+        payment_method_types: ["card"],
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+    app.post("/payment", async (req, res) => {
+      const payment = req.body;
+      const result = await paymentCollection.insertOne(payment);
+      const id = payment.buyingId;
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          paid: true,
+          transactionId: payment.transactionId,
+        },
+      };
+      const updateResult = await buyerCollection.updateOne(filter, updateDoc);
+      res.send({ result });
+    });
 
     app.get("/jwt", async (req, res) => {
-      const email =req.query.email;
-      console.log(email)
+      const email = req.query.email;
+      console.log(email);
       const query = { email: email };
-      console.log(query)
+      console.log(query);
       const user = await usersCollection.findOne(query);
       if (user) {
-        const token = jwt.sign({ email }, process.env.ACCESS_TOKEN,{expiresIn:'7d'});
+        const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {
+          expiresIn: "7d",
+        });
         return res.send({ accessToken: token });
       }
       res.status(403).send({ accessToken: "" });
@@ -152,30 +151,31 @@ async function run() {
 
     app.post("/users", async (req, res) => {
       const user = req.body;
-      console.log(user)
+      console.log(user);
       const result = await usersCollection.insertOne(user);
       res.send(result);
     });
 
-    app.get("/users", async (req, res) => {
-      const query = {};
-      const users = await usersCollection.find(query).toArray();
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const users = await usersCollection.deleteOne(query);
       res.send(users);
     });
     app.get("/users/:role", async (req, res) => {
-      const email=req.params.role;
-      console.log(email)
-      const query = {role:email};
+      const email = req.params.role;
+      console.log(email);
+      const query = { role: email };
       const result = await usersCollection.find(query).toArray();
       res.send(result);
     });
 
-app.put("/users/admin/:id", verifyJwt, async (req, res) => {
+    app.put("/users/admin/:id", verifyJwt, async (req, res) => {
       const decodedEmail = req.decoded.email;
       const query = { email: decodedEmail };
       const user = await usersCollection.findOne(query);
       if (user?.role !== "admin") {
-        return res.status(403).send({message:'forbidden access'})
+        return res.status(403).send({ message: "forbidden access" });
       }
       const id = req.params.id;
       const filter = {
@@ -202,14 +202,14 @@ app.put("/users/admin/:id", verifyJwt, async (req, res) => {
     });
     app.get("/users/seller/:email", async (req, res) => {
       const email = req.params?.email;
-      console.log(email)
+      console.log(email);
       const query = { email };
       const user = await usersCollection.findOne(query);
       res.send({ isSeller: user?.role == "seller" });
     });
     app.get("/users/buyer/:email", async (req, res) => {
       const email = req.params?.email;
-      console.log(email)
+      console.log(email);
       const query = { email };
       const user = await usersCollection.findOne(query);
       res.send({ isBuyer: user?.role == "Buyer" });
