@@ -162,7 +162,15 @@ async function run() {
       const users = await usersCollection.find(query).toArray();
       res.send(users);
     });
-    app.put("/users/admin/:id", verifyJwt, async (req, res) => {
+    app.get("/users/:role", async (req, res) => {
+      const email=req.params.role;
+      console.log(email)
+      const query = {role:email};
+      const result = await usersCollection.find(query).toArray();
+      res.send(result);
+    });
+
+app.put("/users/admin/:id", verifyJwt, async (req, res) => {
       const decodedEmail = req.decoded.email;
       const query = { email: decodedEmail };
       const user = await usersCollection.findOne(query);
