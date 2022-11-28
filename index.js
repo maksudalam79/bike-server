@@ -140,7 +140,7 @@ async function run() {
       const email = req.query?.email;
       console.log(email);
       const decoded = req.decoded?.email;
-      if (email == decoded) {
+      if (email !== decoded) {
         return res.status(403).send({ message: "Forbidden access" });
       }
 
