@@ -47,6 +47,7 @@ async function run() {
     const buyerCollection = client.db("bikeResell").collection("buyer");
     const usersCollection = client.db("bikeResell").collection("users");
     const wishListCollection = client.db("bikeResell").collection("wishList");
+    const reportCollection = client.db("bikeResell").collection("report");
     const paymentCollection = client.db("bikeResell").collection("payment");
 
     app.get("/bikeCategories", async (req, res) => {
@@ -54,6 +55,19 @@ async function run() {
       const Categories = await bikeCategoriesCollection.find(query).toArray();
       res.send(Categories);
     });
+    app.get("/bikeProduct", async (req, res) => {
+      const query = {};
+      const allProduct = await productsCollection.find(query).toArray();
+      res.send(allProduct);
+    });
+    app.delete("/bikeProduct/:id", async (req, res) => {
+      const id=req.params.id
+      const query = {_id:ObjectId(id)};
+      const allProduct = await productsCollection.deleteOne(query)
+      console.log(allProduct)
+      res.send(allProduct);
+    });
+
     app.get("/bikeProduct/:category", async (req, res) => {
       const id = req.params.category;
       const query = { category: id };
@@ -63,16 +77,40 @@ async function run() {
       const Categories = await productsCollection.find(query).toArray();
       res.send(Categories);
     });
+
     app.post("/wishList", async (req, res) => {
       const wish = req.body;
       const result = await wishListCollection.insertOne(wish);
       res.send(result);
     });
+
     app.get("/wistList",async(req,res)=>{
      const query={}
       const result=await wishListCollection.find(query).toArray()
       res.send(result)
     })
+
+    app.post("/report", async (req, res) => {
+      const report = req.body;
+      const result = await reportCollection.insertOne(report);
+      res.send(result);
+    });
+
+    app.get("/report",async(req,res)=>{
+      const query={}
+       const result=await reportCollection.find(query).toArray()
+       res.send(result)
+     })
+
+     app.delete("/report/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id)
+      const query = {_id: ObjectId(id) };
+      const report=await reportCollection.deleteOne(query);
+      console.log(report)
+      res.send(report);
+    });
+
     app.post("/bikeProduct", async (req, res) => {
       const product = req.body;
       const result = await productsCollection.insertOne(product);
