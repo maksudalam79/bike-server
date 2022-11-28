@@ -68,6 +68,11 @@ async function run() {
       const result = await wishListCollection.insertOne(wish);
       res.send(result);
     });
+    app.get("/wistList",async(req,res)=>{
+     const query={}
+      const result=await wishListCollection.find(query).toArray()
+      res.send(result)
+    })
     app.post("/bikeProduct", async (req, res) => {
       const product = req.body;
       const result = await productsCollection.insertOne(product);
@@ -97,7 +102,7 @@ async function run() {
       const email = req.query?.email;
       console.log(email);
       const decoded = req.decoded?.email;
-      if (email !== decoded) {
+      if (email == decoded) {
         return res.status(403).send({ message: "Forbidden access" });
       }
 
@@ -153,6 +158,11 @@ async function run() {
       const user = req.body;
       console.log(user);
       const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+    app.get("/users", async (req, res) => {
+      const query = {};
+      const result = await usersCollection.find(query).toArray();
       res.send(result);
     });
 
